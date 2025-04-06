@@ -1,0 +1,769 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Student Academic Calendar</title>
+  <style>
+    /* Reset and base styles */
+    * {
+      margin: 0;
+      padding: 0;
+      box-sizing: border-box;
+      font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+    }
+    
+    body {
+      background-color: #f5f5f5;
+      color: #333;
+      line-height: 1.6;
+    }
+    
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 0 15px;
+    }
+    
+    /* Header styles */
+    header {
+      background-color: #1e3a8a;
+      color: white;
+      padding: 20px 0;
+      box-shadow: 0 2px 5px rgba(0,0,0,0.1);
+    }
+    
+    header .container {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+    }
+    
+    .logo h1 {
+      font-size: 24px;
+      font-weight: 700;
+    }
+    
+    nav ul {
+      display: flex;
+      list-style: none;
+    }
+    
+    nav ul li {
+      margin-left: 20px;
+    }
+    
+    nav ul li a {
+      color: white;
+      text-decoration: none;
+      font-weight: 500;
+      padding: 5px 10px;
+      border-radius: 4px;
+      transition: background-color 0.3s;
+    }
+    
+    nav ul li a:hover {
+      background-color: rgba(255,255,255,0.1);
+    }
+    
+    /* Main content styles */
+    .main-content {
+      padding: 40px 0;
+    }
+    
+    .calendar-controls {
+      display: flex;
+      justify-content: space-between;
+      align-items: center;
+      margin-bottom: 30px;
+    }
+    
+    .calendar-header {
+      font-size: 28px;
+      font-weight: 700;
+    }
+    
+    .calendar-nav {
+      display: flex;
+      gap: 10px;
+    }
+    
+    .calendar-nav button {
+      background-color: #1e3a8a;
+      color: white;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background-color 0.3s;
+    }
+    
+    .calendar-nav button:hover {
+      background-color: #2d4da8;
+    }
+    
+    .view-switcher {
+      display: flex;
+      gap: 10px;
+      margin-bottom: 20px;
+    }
+    
+    .view-switcher button {
+      background-color: #e5e7eb;
+      color: #333;
+      border: none;
+      padding: 8px 15px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: all 0.3s;
+    }
+    
+    .view-switcher button.active {
+      background-color: #1e3a8a;
+      color: white;
+    }
+    
+    /* Calendar styles */
+    .calendar {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      overflow: hidden;
+    }
+    
+    .calendar-grid {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+    }
+    
+    .calendar-weekdays {
+      background-color: #f9fafb;
+      border-bottom: 1px solid #e5e7eb;
+    }
+    
+    .weekday {
+      padding: 10px;
+      text-align: center;
+      font-weight: 600;
+      color: #4b5563;
+    }
+    
+    .calendar-days {
+      display: grid;
+      grid-template-columns: repeat(7, 1fr);
+    }
+    
+    .day {
+      min-height: 100px;
+      padding: 10px;
+      border-right: 1px solid #e5e7eb;
+      border-bottom: 1px solid #e5e7eb;
+      position: relative;
+    }
+    
+    .day:nth-child(7n) {
+      border-right: none;
+    }
+    
+    .day-number {
+      font-weight: 600;
+      position: absolute;
+      top: 5px;
+      right: 10px;
+      color: #6b7280;
+    }
+    
+    .day.today {
+      background-color: #f0f9ff;
+    }
+    
+    .day.today .day-number {
+      color: #1e3a8a;
+      font-weight: 700;
+    }
+    
+    .day.other-month {
+      background-color: #f9fafb;
+      color: #9ca3af;
+    }
+    
+    .event {
+      background-color: #dbeafe;
+      border-left: 3px solid #1e3a8a;
+      padding: 5px 8px;
+      margin-top: 15px;
+      border-radius: 4px;
+      font-size: 14px;
+      cursor: pointer;
+      transition: background-color 0.3s;
+    }
+    
+    .event.exam {
+      background-color: #fee2e2;
+      border-left-color: #ef4444;
+    }
+    
+    .event.deadline {
+      background-color: #fef3c7;
+      border-left-color: #f59e0b;
+    }
+    
+    .event.holiday {
+      background-color: #d1fae5;
+      border-left-color: #10b981;
+    }
+    
+    .event:hover {
+      filter: brightness(0.95);
+    }
+    
+    /* Event details modal */
+    .modal {
+      display: none;
+      position: fixed;
+      z-index: 100;
+      left: 0;
+      top: 0;
+      width: 100%;
+      height: 100%;
+      background-color: rgba(0,0,0,0.5);
+    }
+    
+    .modal-content {
+      background-color: white;
+      margin: 10% auto;
+      padding: 20px;
+      width: 80%;
+      max-width: 500px;
+      border-radius: 8px;
+      box-shadow: 0 4px 20px rgba(0,0,0,0.2);
+    }
+    
+    .close-modal {
+      float: right;
+      font-size: 24px;
+      font-weight: bold;
+      cursor: pointer;
+    }
+    
+    .event-details h3 {
+      margin-bottom: 15px;
+      color: #1e3a8a;
+    }
+    
+    .event-meta {
+      margin-bottom: 15px;
+      color: #6b7280;
+    }
+    
+    .event-description {
+      margin-bottom: 20px;
+    }
+    
+    /* List view styles */
+    .list-view {
+      display: none;
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      overflow: hidden;
+    }
+    
+    .list-item {
+      padding: 15px;
+      border-bottom: 1px solid #e5e7eb;
+      display: flex;
+      align-items: center;
+    }
+    
+    .list-date {
+      flex: 0 0 120px;
+      font-weight: 600;
+    }
+    
+    .list-event {
+      flex: 1;
+      padding-left: 15px;
+    }
+    
+    .list-item.exam {
+      border-left: 4px solid #ef4444;
+    }
+    
+    .list-item.deadline {
+      border-left: 4px solid #f59e0b;
+    }
+    
+    .list-item.holiday {
+      border-left: 4px solid #10b981;
+    }
+    
+    /* Add Event Form */
+    .add-event-section {
+      margin-top: 30px;
+    }
+    
+    .event-form {
+      background-color: white;
+      border-radius: 8px;
+      box-shadow: 0 2px 10px rgba(0,0,0,0.05);
+      padding: 20px;
+    }
+    
+    .form-group {
+      margin-bottom: 15px;
+    }
+    
+    .form-group label {
+      display: block;
+      margin-bottom: 5px;
+      font-weight: 500;
+    }
+    
+    .form-group input,
+    .form-group select,
+    .form-group textarea {
+      width: 100%;
+      padding: 10px;
+      border: 1px solid #d1d5db;
+      border-radius: 4px;
+      font-size: 16px;
+    }
+    
+    .form-group textarea {
+      height: 100px;
+      resize: vertical;
+    }
+    
+    .form-submit {
+      background-color: #1e3a8a;
+      color: white;
+      border: none;
+      padding: 10px 20px;
+      border-radius: 4px;
+      cursor: pointer;
+      font-weight: 500;
+      transition: background-color 0.3s;
+    }
+    
+    .form-submit:hover {
+      background-color: #2d4da8;
+    }
+    
+    /* Responsive styles */
+    @media (max-width: 768px) {
+      .calendar-grid {
+        display: block;
+        overflow-x: auto;
+      }
+      
+      .calendar-weekdays {
+        display: flex;
+      }
+      
+      .calendar-days {
+        display: flex;
+        flex-wrap: wrap;
+      }
+      
+      .day {
+        width: calc(100% / 7);
+        min-height: 80px;
+      }
+      
+      .event {
+        font-size: 12px;
+        padding: 3px 5px;
+      }
+      
+      nav ul {
+        flex-direction: column;
+      }
+      
+      nav ul li {
+        margin: 5px 0;
+      }
+      
+      .calendar-controls {
+        flex-direction: column;
+        align-items: flex-start;
+        gap: 10px;
+      }
+    }
+  </style>
+</head>
+<body>
+  <header>
+    <div class="container">
+      <div class="logo">
+        <h1>Student Academic Calendar</h1>
+      </div>
+      <nav>
+        <ul>
+          <li><a href="#" class="active">Calendar</a></li>
+          <li><a href="#">Courses</a></li>
+          <li><a href="#">Deadlines</a></li>
+          <li><a href="#">Settings</a></li>
+        </ul>
+      </nav>
+    </div>
+  </header>
+  
+  <main class="main-content">
+    <div class="container">
+      <div class="calendar-controls">
+        <div class="calendar-header" id="calendar-month">April 2025</div>
+        <div class="calendar-nav">
+          <button id="prev-month">Previous</button>
+          <button id="today">Today</button>
+          <button id="next-month">Next</button>
+        </div>
+      </div>
+      
+      <div class="view-switcher">
+        <button class="view-btn active" data-view="month">Month</button>
+        <button class="view-btn" data-view="list">List</button>
+      </div>
+      
+      <div class="calendar" id="month-view">
+        <div class="calendar-weekdays">
+          <div class="weekday">Sun</div>
+          <div class="weekday">Mon</div>
+          <div class="weekday">Tue</div>
+          <div class="weekday">Wed</div>
+          <div class="weekday">Thu</div>
+          <div class="weekday">Fri</div>
+          <div class="weekday">Sat</div>
+        </div>
+        <div class="calendar-days" id="calendar-days">
+          <!-- Calendar days will be generated by JavaScript -->
+        </div>
+      </div>
+      
+      <div class="list-view" id="list-view">
+        <!-- List view events will be generated by JavaScript -->
+      </div>
+      
+      <div class="add-event-section">
+        <h2>Add New Event</h2>
+        <form class="event-form" id="add-event-form">
+          <div class="form-group">
+            <label for="event-title">Event Title</label>
+            <input type="text" id="event-title" required>
+          </div>
+          <div class="form-group">
+            <label for="event-date">Date</label>
+            <input type="date" id="event-date" required>
+          </div>
+          <div class="form-group">
+            <label for="event-type">Event Type</label>
+            <select id="event-type" required>
+              <option value="class">Class</option>
+              <option value="exam">Exam</option>
+              <option value="deadline">Deadline</option>
+              <option value="holiday">Holiday</option>
+            </select>
+          </div>
+          <div class="form-group">
+            <label for="event-description">Description</label>
+            <textarea id="event-description"></textarea>
+          </div>
+          <button type="submit" class="form-submit">Add Event</button>
+        </form>
+      </div>
+    </div>
+  </main>
+  
+  <div class="modal" id="event-modal">
+    <div class="modal-content">
+      <span class="close-modal">&times;</span>
+      <div class="event-details">
+        <h3 id="modal-title">Event Title</h3>
+        <div class="event-meta" id="modal-meta">April 15, 2025 - Class</div>
+        <div class="event-description" id="modal-description">
+          Event description here.
+        </div>
+      </div>
+    </div>
+  </div>
+
+  <script>
+    document.addEventListener('DOMContentLoaded', function() {
+      // Calendar state
+      const state = {
+        currentDate: new Date(),
+        events: [
+          {
+            id: 1,
+            title: 'Midterm Exam',
+            date: new Date(2025, 3, 15), // April 15, 2025
+            type: 'exam',
+            description: 'Computer Science midterm exam covering chapters 1-5.'
+          },
+          {
+            id: 2,
+            title: 'Project Deadline',
+            date: new Date(2025, 3, 22), // April 22, 2025
+            type: 'deadline',
+            description: 'Final submission for the semester project.'
+          },
+          {
+            id: 3, 
+            title: 'Spring Break',
+            date: new Date(2025, 3, 7), // April 7, 2025
+            type: 'holiday',
+            description: 'Spring break - No classes for the entire week.'
+          },
+          {
+            id: 4,
+            title: 'Group Meeting',
+            date: new Date(2025, 3, 10), // April 10, 2025
+            type: 'class',
+            description: 'Meet with project team to discuss progress.'
+          },
+          {
+            id: 5,
+            title: 'Research Paper Due',
+            date: new Date(2025, 3, 28), // April 28, 2025
+            type: 'deadline',
+            description: 'Submit research paper on chosen topic.'
+          }
+        ]
+      };
+      
+      // DOM elements
+      const calendarDays = document.getElementById('calendar-days');
+      const calendarMonth = document.getElementById('calendar-month');
+      const prevMonthBtn = document.getElementById('prev-month');
+      const nextMonthBtn = document.getElementById('next-month');
+      const todayBtn = document.getElementById('today');
+      const viewBtns = document.querySelectorAll('.view-btn');
+      const monthView = document.getElementById('month-view');
+      const listView = document.getElementById('list-view');
+      const eventModal = document.getElementById('event-modal');
+      const closeModal = document.querySelector('.close-modal');
+      const modalTitle = document.getElementById('modal-title');
+      const modalMeta = document.getElementById('modal-meta');
+      const modalDescription = document.getElementById('modal-description');
+      const addEventForm = document.getElementById('add-event-form');
+      
+      // Helper functions
+      function getDaysInMonth(year, month) {
+        return new Date(year, month + 1, 0).getDate();
+      }
+      
+      function getFirstDayOfMonth(year, month) {
+        return new Date(year, month, 1).getDay();
+      }
+      
+      function formatMonth(date) {
+        return date.toLocaleString('default', { month: 'long', year: 'numeric' });
+      }
+      
+      function formatDate(date) {
+        return date.toLocaleDateString('en-US', { 
+          month: 'long', 
+          day: 'numeric', 
+          year: 'numeric' 
+        });
+      }
+      
+      function isSameDay(date1, date2) {
+        return date1.getDate() === date2.getDate() && 
+               date1.getMonth() === date2.getMonth() && 
+               date1.getFullYear() === date2.getFullYear();
+      }
+      
+      function getEventsForDate(date) {
+        return state.events.filter(event => isSameDay(event.date, date));
+      }
+      
+      // Render calendar
+      function renderCalendar() {
+        calendarMonth.textContent = formatMonth(state.currentDate);
+        calendarDays.innerHTML = '';
+        
+        const currentYear = state.currentDate.getFullYear();
+        const currentMonth = state.currentDate.getMonth();
+        const today = new Date();
+        
+        const daysInMonth = getDaysInMonth(currentYear, currentMonth);
+        const firstDayOfMonth = getFirstDayOfMonth(currentYear, currentMonth);
+        
+        // Previous month's days
+        const prevMonth = new Date(currentYear, currentMonth, 0);
+        const prevMonthDays = getDaysInMonth(prevMonth.getFullYear(), prevMonth.getMonth());
+        
+        for (let i = firstDayOfMonth - 1; i >= 0; i--) {
+          const day = document.createElement('div');
+          day.className = 'day other-month';
+          day.innerHTML = `<div class="day-number">${prevMonthDays - i}</div>`;
+          calendarDays.appendChild(day);
+        }
+        
+        // Current month's days
+        for (let i = 1; i <= daysInMonth; i++) {
+          const currentDate = new Date(currentYear, currentMonth, i);
+          const events = getEventsForDate(currentDate);
+          
+          const day = document.createElement('div');
+          day.className = 'day';
+          
+          if (
+            currentDate.getDate() === today.getDate() && 
+            currentDate.getMonth() === today.getMonth() && 
+            currentDate.getFullYear() === today.getFullYear()
+          ) {
+            day.classList.add('today');
+          }
+          
+          day.innerHTML = `<div class="day-number">${i}</div>`;
+          
+          // Add events to the day
+          events.forEach(event => {
+            const eventElement = document.createElement('div');
+            eventElement.className = `event ${event.type}`;
+            eventElement.textContent = event.title;
+            eventElement.dataset.eventId = event.id;
+            
+            eventElement.addEventListener('click', function() {
+              showEventDetails(event);
+            });
+            
+            day.appendChild(eventElement);
+          });
+          
+          calendarDays.appendChild(day);
+        }
+        
+        // Next month's days
+        const totalDaysDisplayed = firstDayOfMonth + daysInMonth;
+        const remainingCells = 42 - totalDaysDisplayed; // 6 rows of 7 days
+        
+        for (let i = 1; i <= remainingCells; i++) {
+          const day = document.createElement('div');
+          day.className = 'day other-month';
+          day.innerHTML = `<div class="day-number">${i}</div>`;
+          calendarDays.appendChild(day);
+        }
+        
+        // Also update list view
+        renderListView();
+      }
+      
+      // Render list view
+      function renderListView() {
+        listView.innerHTML = '';
+        
+        // Sort events by date
+        const sortedEvents = [...state.events].sort((a, b) => a.date - b.date);
+        
+        sortedEvents.forEach(event => {
+          const listItem = document.createElement('div');
+          listItem.className = `list-item ${event.type}`;
+          
+          const dateElement = document.createElement('div');
+          dateElement.className = 'list-date';
+          dateElement.textContent = formatDate(event.date);
+          
+          const eventElement = document.createElement('div');
+          eventElement.className = 'list-event';
+          eventElement.textContent = event.title;
+          
+          listItem.appendChild(dateElement);
+          listItem.appendChild(eventElement);
+          
+          listItem.addEventListener('click', function() {
+            showEventDetails(event);
+          });
+          
+          listView.appendChild(listItem);
+        });
+      }
+      
+      // Show event details in modal
+      function showEventDetails(event) {
+        modalTitle.textContent = event.title;
+        modalMeta.textContent = `${formatDate(event.date)} - ${event.type.charAt(0).toUpperCase() + event.type.slice(1)}`;
+        modalDescription.textContent = event.description;
+        eventModal.style.display = 'block';
+      }
+      
+      // Initialize calendar
+      renderCalendar();
+      
+      // Event listeners
+      prevMonthBtn.addEventListener('click', function() {
+        state.currentDate = new Date(state.currentDate.getFullYear(), state.currentDate.getMonth() - 1, 1);
+        renderCalendar();
+      });
+      
+      nextMonthBtn.addEventListener('click', function() {
+        state.currentDate = new Date(state.currentDate.getFullYear(), state.currentDate.getMonth() + 1, 1);
+        renderCalendar();
+      });
+      
+      todayBtn.addEventListener('click', function() {
+        state.currentDate = new Date();
+        renderCalendar();
+      });
+      
+      viewBtns.forEach(btn => {
+        btn.addEventListener('click', function() {
+          viewBtns.forEach(btn => btn.classList.remove('active'));
+          this.classList.add('active');
+          
+          const viewType = this.dataset.view;
+          if (viewType === 'month') {
+            monthView.style.display = 'block';
+            listView.style.display = 'none';
+          } else {
+            monthView.style.display = 'none';
+            listView.style.display = 'block';
+          }
+        });
+      });
+      
+      closeModal.addEventListener('click', function() {
+        eventModal.style.display = 'none';
+      });
+      
+      window.addEventListener('click', function(event) {
+        if (event.target === eventModal) {
+          eventModal.style.display = 'none';
+        }
+      });
+      
+      addEventForm.addEventListener('submit', function(event) {
+        event.preventDefault();
+        
+        const title = document.getElementById('event-title').value;
+        const dateStr = document.getElementById('event-date').value;
+        const type = document.getElementById('event-type').value;
+        const description = document.getElementById('event-description').value;
+        
+        const date = new Date(dateStr);
+        
+        const newEvent = {
+          id: state.events.length + 1,
+          title,
+          date,
+          type,
+          description
+        };
+        
+        state.events.push(newEvent);
+        renderCalendar();
+        
+        // Reset form
+        addEventForm.reset();
+        
+        // Show confirmation
+        alert('Event added successfully!');
+      });
+    });
+  </script>
+</body>
+</html>
